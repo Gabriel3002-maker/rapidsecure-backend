@@ -1,16 +1,27 @@
 package com.rapidsecure.rapidsecure.entity;
 
+
 import jakarta.persistence.*;
 
+
 @Entity
-@Table(name = "productos")
-public class Producto {
+@Table(name = "rol")
+public class Rol {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nombre;
-    private double precio;
+
+    // Constructor por defecto (necesario para JPA)
+    public Rol() {
+    }
+
+    // Constructor con parámetros
+    public Rol(String nombre) {
+        this.nombre = nombre;
+    }
 
     // Getters y setters
     public Long getId() {
@@ -28,12 +39,5 @@ public class Producto {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
 }
+

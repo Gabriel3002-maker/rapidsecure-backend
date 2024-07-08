@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "persona")
 public class Persona {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,14 +14,19 @@ public class Persona {
     private String cedula;
     private String correo;
     private String telefono;
-    private String rol;
-    private String password; // Nuevo campo para almacenar la contraseña
 
-    // Constructores (puedes agregar más según tus necesidades)
+    @ManyToOne(fetch = FetchType.LAZY)  // Relación Many-to-One
+    @JoinColumn(name = "rol_id")        // Nombre de la columna en la tabla persona que guarda la clave foránea
+    private Rol rol;                     // Objeto Rol que representa el rol de la persona
+
+    private String password;
+
+    // Constructor por defecto (necesario para JPA)
     public Persona() {
     }
 
-    public Persona(String nombre, String cedula, String correo, String telefono, String rol, String password) {
+    // Constructor con parámetros
+    public Persona(String nombre, String cedula, String correo, String telefono, Rol rol, String password) {
         this.nombre = nombre;
         this.cedula = cedula;
         this.correo = correo;
@@ -70,11 +76,11 @@ public class Persona {
         this.telefono = telefono;
     }
 
-    public String getRol() {
+    public Rol getRol() {
         return rol;
     }
 
-    public void setRol(String rol) {
+    public void setRol(Rol rol) {
         this.rol = rol;
     }
 
