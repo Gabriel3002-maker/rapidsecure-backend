@@ -1,5 +1,6 @@
 package com.rapidsecure.rapidsecure.controller;
 
+import com.rapidsecure.rapidsecure.dto.PersonaDTO;
 import com.rapidsecure.rapidsecure.entity.Estado;
 import com.rapidsecure.rapidsecure.entity.Persona;
 import com.rapidsecure.rapidsecure.service.PersonaService;
@@ -37,19 +38,19 @@ public class PersonaController {
 
     @PostMapping
     @Operation(summary = "Crear", description = "Crear Usuario")
-    public ResponseEntity<Persona> crearPersona(@RequestBody Persona persona) {
-        Persona nuevaPersona = personaService.guardarPersona(persona);
+    public ResponseEntity<Persona> crearPersona(@RequestBody PersonaDTO personaDTO) {
+        Persona nuevaPersona = personaService.guardarPersona(personaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaPersona);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar", description = "Actualizar Usuario por Cedula")
-    public ResponseEntity<Persona> actualizarPersona(@PathVariable Long id, @RequestBody Persona persona) {
+    public ResponseEntity<Persona> actualizarPersona(@PathVariable Long id, @RequestBody PersonaDTO personaDTO) {
         if (!personaService.obtenerPersonaPorCedula(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        persona.setId(id);  // asegura que se actualiza el producto correcto
-        Persona personaActualizado = personaService.guardarPersona(persona);
+        personaDTO.setId(id);  // asegura que se actualiza el producto correcto
+        Persona personaActualizado = personaService.guardarPersona(personaDTO);
         return ResponseEntity.ok(personaActualizado);
     }
 
