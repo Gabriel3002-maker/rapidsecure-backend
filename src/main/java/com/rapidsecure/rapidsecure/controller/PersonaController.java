@@ -1,5 +1,6 @@
 package com.rapidsecure.rapidsecure.controller;
 
+import com.rapidsecure.rapidsecure.dto.ApiResponse;
 import com.rapidsecure.rapidsecure.dto.PersonaDTO;
 import com.rapidsecure.rapidsecure.entity.Estado;
 import com.rapidsecure.rapidsecure.entity.Persona;
@@ -22,7 +23,7 @@ public class PersonaController {
     private PersonaService personaService;
 
 
-    @GetMapping
+    /*@GetMapping
     @Operation(summary = "Obtenr", description = "Obtner Usuarios Disponibles")
     public List<Persona> obtenerPersonas(){
         return  personaService.obtenerTodaslasPersonas();
@@ -30,39 +31,128 @@ public class PersonaController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener", description = "Obtener Persona por Id")
-    public ResponseEntity<Persona> obtenerPersonaPorId(@PathVariable Long id) {
-        Optional<Persona> persona = personaService.obtenerPersonaPorCedula(id);
-        return persona.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
+    public ResponseEntity<ApiResponse<Persona>> obtenerPersonaPorId(@PathVariable Long id) {
+        try {
+            Optional<Persona> persona = personaService.obtenerPersonaPorCedula(id);
+            if (persona.isPresent()) {
+                ApiResponse<Persona> response = new ApiResponse<>(
+                        HttpStatus.OK.value(),
+                        "Persona encontrada",
+                        true,
+                        persona.get()
+                );
+                return ResponseEntity.ok(response);
+            } else {
+                ApiResponse<Persona> response = new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Persona no encontrada",
+                        false,
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            ApiResponse<Persona> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al obtener persona: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }**/
+
 
 
     @PostMapping
     @Operation(summary = "Crear", description = "Crear Usuario")
-    public ResponseEntity<Persona> crearPersona(@RequestBody PersonaDTO personaDTO) {
-        Persona nuevaPersona = personaService.guardarPersona(personaDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaPersona);
+    public ResponseEntity<ApiResponse<Persona>> crearPersona(@RequestBody PersonaDTO personaDTO) {
+        try {
+            Persona nuevaPersona = personaService.guardarPersona(personaDTO);
+            ApiResponse<Persona> response = new ApiResponse<>(
+                    HttpStatus.CREATED.value(),
+                    "Persona creada correctamente",
+                    true,
+                    nuevaPersona
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            ApiResponse<Persona> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al crear persona: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
-    @PutMapping("/{id}")
+    /*@PutMapping("/{id}")
     @Operation(summary = "Actualizar", description = "Actualizar Usuario por Cedula")
-    public ResponseEntity<Persona> actualizarPersona(@PathVariable Long id, @RequestBody PersonaDTO personaDTO) {
-        if (!personaService.obtenerPersonaPorCedula(id).isPresent()) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Persona>> actualizarPersona(@PathVariable Long id, @RequestBody PersonaDTO personaDTO) {
+        try {
+            if (!personaService.obtenerPersonaPorCedula(id).isPresent()) {
+                ApiResponse<Persona> response = new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Persona no encontrada",
+                        false,
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            personaDTO.setId(id);
+            Persona personaActualizada = personaService.guardarPersona(personaDTO);
+            ApiResponse<Persona> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Persona actualizada correctamente",
+                    true,
+                    personaActualizada
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<Persona> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al actualizar persona: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-        personaDTO.setId(id);  // asegura que se actualiza el producto correcto
-        Persona personaActualizado = personaService.guardarPersona(personaDTO);
-        return ResponseEntity.ok(personaActualizado);
-    }
+    }**/
 
-    @DeleteMapping("/{id}")
+
+    /*@DeleteMapping("/{id}")
     @Operation(summary = "Eliminar", description = "Eliminar Usuario por Cedula")
-    public ResponseEntity<Void> eliminarPersona(@PathVariable Long id) {
-        if (!personaService.obtenerPersonaPorCedula(id).isPresent()) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Void>> eliminarPersona(@PathVariable Long id) {
+        try {
+            if (!personaService.obtenerPersonaPorCedula(id).isPresent()) {
+                ApiResponse<Void> response = new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Persona no encontrada",
+                        false,
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            personaService.eliminarPersona(id);
+            ApiResponse<Void> response = new ApiResponse<>(
+                    HttpStatus.NO_CONTENT.value(),
+                    "Persona eliminada correctamente",
+                    true,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
+        } catch (Exception e) {
+            ApiResponse<Void> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al eliminar persona: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-        personaService.eliminarPersona(id);
-        return ResponseEntity.noContent().build();
-    }
+    }**/
+
 
 
 
