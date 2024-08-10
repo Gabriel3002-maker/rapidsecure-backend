@@ -24,6 +24,14 @@ jobs:
       run: |
         scp -o StrictHostKeyChecking=no docker-compose.yml root@77.237.234.122:/home/files-docker-compose/docker-compose.yml
 
+    - name: Copy Dockerfile to server
+      run: |
+        scp -o StrictHostKeyChecking=no Dockerfile root@77.237.234.122:/home/files-docker-compose/Dockerfile
+
+    - name: List files in deployment directory
+      run: |
+        ssh -o StrictHostKeyChecking=no root@77.237.234.122 "ls -la /home/files-docker-compose"
+
     - name: Deploy to Server
       run: |
         ssh -o StrictHostKeyChecking=no root@77.237.234.122 "cd /home/files-docker-compose && docker-compose up -d"
