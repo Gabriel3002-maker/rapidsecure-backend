@@ -6,12 +6,32 @@ on:
       - master
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+
+    - name: Build with Maven
+      run: mvn clean package --file pom.xml
+
+    - name: Verify JAR file
+      run: ls -la target
+
+    - name: Build Docker image
+      run: docker build -t my-app .
+
+    - name: Push Docker image
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        docker tag my-app my-dockerhub-username/my-app:latest
+        docker push my-dockerhub-username/my-app:latest
 
     - name: Set up SSH key
       run: |
@@ -23,14 +43,6 @@ jobs:
     - name: Copy docker-compose.yml to server
       run: |
         scp -o StrictHostKeyChecking=no docker-compose.yml root@77.237.234.122:/home/files-docker-compose/docker-compose.yml
-
-    - name: Copy Dockerfile to server
-      run: |
-        scp -o StrictHostKeyChecking=no Dockerfile root@77.237.234.122:/home/files-docker-compose/Dockerfile
-
-    - name: List files in deployment directory
-      run: |
-        ssh -o StrictHostKeyChecking=no root@77.237.234.122 "ls -la /home/files-docker-compose"
 
     - name: Deploy to Server
       run: |
