@@ -1,5 +1,6 @@
-# Usa una imagen base de OpenJDK para Java 22
-FROM openjdk:21-jdk as build
+# Usa una imagen base que ya tenga Maven preinstalado
+FROM  maven:3.9-amazoncorretto-21-al2023 AS build
+
 
 # Establece el directorio de trabajo en /app
 WORKDIR /app
@@ -9,11 +10,10 @@ COPY pom.xml ./
 COPY src ./src
 
 # Construye el JAR
-RUN apt-get update && apt-get install -y maven
 RUN mvn clean package
 
 # Usa una imagen base de OpenJDK para la ejecución
-FROM openjdk:21-jdk
+FROM openjdk:21
 
 # Establece el directorio de trabajo en /app
 WORKDIR /app
