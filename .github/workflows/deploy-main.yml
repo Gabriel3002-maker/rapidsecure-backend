@@ -30,8 +30,13 @@ jobs:
         docker tag my-app my-dockerhub-username/my-app:latest
         docker push my-dockerhub-username/my-app:latest
 
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 77.237.234.122 >> ~/.ssh/known_hosts
+
     - name: Deploy to Server
       run: |
-        ssh root@77.237.234.122 "docker pull my-dockerhub-username/my-app:latest && docker-compose -f /path/to/docker-compose.yml up -d"
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh -o StrictHostKeyChecking=no root@77.237.234.122 "docker pull my-dockerhub-username/my-app:latest && docker-compose -f /path/to/docker-compose.yml up -d"
