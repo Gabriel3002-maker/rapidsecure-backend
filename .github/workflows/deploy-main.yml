@@ -66,9 +66,9 @@ jobs:
             # Eliminar contenedor antiguo si existe
             sudo docker rm -f spring-boot-app-container || true
             # Eliminar imagen antigua si existe
-            sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest || true
+            sudo docker rmi -f ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest || true
             # Descargar nueva imagen Docker
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
             # Ejecutar nueva imagen Docker
-            sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
+            sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
           EOF
