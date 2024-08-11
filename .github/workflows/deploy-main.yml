@@ -26,6 +26,12 @@ jobs:
         run: |
           docker build -t myapp:latest .
 
+      - name: Display environment variables
+        run: |
+          echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"
+          echo "VPS_USER=${{ secrets.VPS_USER }}"
+          echo "VPS_HOST=${{ secrets.VPS_HOST }}"
+
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
