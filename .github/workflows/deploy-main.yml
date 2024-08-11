@@ -59,7 +59,7 @@ jobs:
           
           # Levanta los contenedores usando Docker Compose
           echo "Deploying Docker Compose..."
-          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'docker-compose -f /path/to/docker-compose.yml up -d --build'
+          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'docker-compose -f /home/files-docker-compose/docker-compose.yml up -d --build'
           
           # Limpia el archivo temporal de la clave SSH
           rm /tmp/id_rsa
