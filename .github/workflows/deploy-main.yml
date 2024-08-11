@@ -26,20 +26,29 @@ jobs:
         run: |
           docker build -t myapp:latest .
 
-      - name: Display environment variables
-        run: |
-          echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"
-          echo "VPS_USER=${{ secrets.VPS_USER }}"
-          echo "VPS_HOST=${{ secrets.VPS_HOST }}"
-
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
+          # Guarda la clave SSH en un archivo temporal y ajusta los permisos
+          echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
+          chmod 600 /tmp/id_rsa
+
+          # Verifica la conexión SSH
+          if ssh -i /tmp/id_rsa -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'; then
+            echo "SSH connection successful"
+          else
+            echo "Failed to connect via SSH" >&2
+            exit 1
+          fi
+          
           # Guarda la imagen Docker en el VPS
-          docker save myapp:latest | bzip2 | ssh -i $SSH_PRIVATE_KEY $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
+          docker save myapp:latest | bzip2 | ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
           
           # Levanta los contenedores usando Docker Compose
-          ssh -i $SSH_PRIVATE_KEY $VPS_USER@$VPS_HOST 'docker-compose -f /path/to/docker-compose.yml up -d --build'
+          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'docker-compose -f /path/to/docker-compose.yml up -d --build'
+          
+          # Limpia el archivo temporal de la clave SSH
+          rm /tmp/id_rsa
