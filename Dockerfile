@@ -1,6 +1,5 @@
 # Usa una imagen base que ya tenga Maven preinstalado
-FROM  maven:3.9-amazoncorretto-21-al2023 AS build
-
+FROM maven:3.9-amazoncorretto-21-al2023 AS build
 
 # Establece el directorio de trabajo en /app
 WORKDIR /app
@@ -18,7 +17,7 @@ FROM openjdk:21
 # Establece el directorio de trabajo en /app
 WORKDIR /app
 
-# Copia el archivo JAR construido
+# Copia el archivo JAR construido desde la etapa anterior
 COPY --from=build /app/target/rapidsecure-0.0.1-SNAPSHOT.jar app.jar
 
 # Expone el puerto en el que la aplicación escucha

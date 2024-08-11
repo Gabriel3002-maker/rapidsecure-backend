@@ -22,7 +22,7 @@ jobs:
       - name: Build JAR
         run: |
           ./mvnw clean package
-          
+
       - name: List target directory
         run: ls -la target
 
@@ -55,8 +55,8 @@ jobs:
             echo "Failed to connect via SSH" >&2
             exit 1
           fi
-          
-          # Guarda la imagen Docker en el VPS
+
+          # Copia la imagen Docker al VPS
           echo "Uploading Docker image..."
           docker save myapp:latest | bzip2 | ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
           
