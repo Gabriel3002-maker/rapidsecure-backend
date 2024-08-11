@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '21'
-          distribution: 'selenium'
+          distribution: 'temurin'
           
       - name: Build JAR file
         run: mvn clean package  # o el comando que uses para construir el archivo JAR
