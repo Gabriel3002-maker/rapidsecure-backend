@@ -36,6 +36,10 @@ jobs:
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /tmp/id_rsa
           chmod 600 /tmp/id_rsa
 
+          # Agrega la clave del host al archivo known_hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
+
           # Verifica la conexión SSH
           echo "Attempting SSH connection..."
           if ssh -i /tmp/id_rsa -o ConnectTimeout=10 -o LogLevel=DEBUG $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'; then
