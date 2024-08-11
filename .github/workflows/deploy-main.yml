@@ -62,7 +62,7 @@ jobs:
 
           # Pull the Docker image from Docker Hub and deploy it
           echo "Pulling Docker image from Docker Hub..."
-          ssh $VPS_USER@$VPS_HOST << 'EOF'
+          ssh $VPS_USER@$VPS_HOST << EOF
             # Eliminar contenedor antiguo si existe
             sudo docker rm -f spring-boot-app-container || true
             # Eliminar imagen antigua si existe
