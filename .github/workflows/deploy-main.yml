@@ -41,7 +41,7 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
 
   deploy:
     needs: build
