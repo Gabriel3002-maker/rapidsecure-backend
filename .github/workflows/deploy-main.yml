@@ -29,15 +29,16 @@ jobs:
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: root
+          VPS_HOST: 77.237.234.122
         run: |
           # Guarda la clave SSH en un archivo temporal y ajusta los permisos
-          echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /tmp/id_rsa
           chmod 600 /tmp/id_rsa
 
           # Verifica la conexión SSH
-          if ssh -i /tmp/id_rsa -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'; then
+          echo "Attempting SSH connection..."
+          if ssh -i /tmp/id_rsa -o ConnectTimeout=10 -o LogLevel=DEBUG $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'; then
             echo "SSH connection successful"
           else
             echo "Failed to connect via SSH" >&2
@@ -45,9 +46,11 @@ jobs:
           fi
           
           # Guarda la imagen Docker en el VPS
+          echo "Uploading Docker image..."
           docker save myapp:latest | bzip2 | ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
           
           # Levanta los contenedores usando Docker Compose
+          echo "Deploying Docker Compose..."
           ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'docker-compose -f /path/to/docker-compose.yml up -d --build'
           
           # Limpia el archivo temporal de la clave SSH
