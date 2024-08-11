@@ -20,9 +20,9 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: |
-           mvn clean install
-           mkdir artifacts && cp target/*.jar artifacts
-           cd artifacts && ls
+        mvn clean install
+        mkdir artifacts && cp target/*.jar artifacts
+        cd artifacts && ls
     - name: Save artifact
       uses: actions/upload-artifact@v2
       with:
@@ -47,28 +47,33 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to VPS
-        env:
-          VPS_USER: root
-          VPS_HOST: 77.237.234.122
-        run: |
-          # Verificar conexión SSH
-          ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
+    - name: Add SSH Host Key
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 77.237.234.122 >> ~/.ssh/known_hosts
 
-          # Pull the Docker image from Docker Hub and deploy it
-          echo "Pulling Docker image from Docker Hub..."
-          ssh $VPS_USER@$VPS_HOST << EOF
-            # Eliminar contenedor antiguo si existe
-            sudo docker rm -f spring-boot-app-container || true
-            # Eliminar imagen antigua si existe
-            sudo docker rmi -f ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest || true
-            # Descargar nueva imagen Docker
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
-            # Ejecutar nueva imagen Docker
-            sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
-          EOF
+    - name: Deploy to VPS
+      env:
+        VPS_USER: root
+        VPS_HOST: 77.237.234.122
+      run: |
+        # Verificar conexión SSH
+        ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
+
+        # Pull the Docker image from Docker Hub and deploy it
+        echo "Pulling Docker image from Docker Hub..."
+        ssh $VPS_USER@$VPS_HOST << EOF
+          # Eliminar contenedor antiguo si existe
+          sudo docker rm -f spring-boot-app-container || true
+          # Eliminar imagen antigua si existe
+          sudo docker rmi -f ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest || true
+          # Descargar nueva imagen Docker
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
+          # Ejecutar nueva imagen Docker
+          sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
+        EOF
