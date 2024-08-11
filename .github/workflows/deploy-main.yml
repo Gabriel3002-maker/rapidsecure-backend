@@ -51,6 +51,10 @@ jobs:
           echo "Uploading docker-compose.yml..."
           scp -i /tmp/id_rsa docker-compose.yml $VPS_USER@$VPS_HOST:/home/files-docker-compose/
 
+          # Listar archivos en el directorio /home/files-docker-compose en el VPS
+          echo "Listing files in /home/files-docker-compose on the VPS..."
+          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'ls -la /home/files-docker-compose'
+
           # Desplegar la aplicación usando Docker Compose
           echo "Deploying Docker Compose..."
           ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'cd /home/files-docker-compose && docker-compose up -d --build'
