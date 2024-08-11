@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'  # Usa la versión de Java que tu aplicación requiere
+          java-version: '21'  # Usa la versión de Java que tu aplicación requiere
 
       - name: Build JAR file
         run: mvn clean package  # o el comando que uses para construir el archivo JAR
