@@ -60,14 +60,15 @@ jobs:
           # Verificar conexión SSH
           ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
 
-          # Subir la imagen Docker al VPS
-          echo "Uploading Docker image..."
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
-
-          # Conectarse al VPS y manejar el contenedor
+          # Pull the Docker image from Docker Hub and deploy it
+          echo "Pulling Docker image from Docker Hub..."
           ssh $VPS_USER@$VPS_HOST << 'EOF'
-            # Eliminar contenedor antiguo
+            # Eliminar contenedor antiguo si existe
             sudo docker rm -f spring-boot-app-container || true
+            # Eliminar imagen antigua si existe
+            sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest || true
+            # Descargar nueva imagen Docker
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
             # Ejecutar nueva imagen Docker
             sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
           EOF
