@@ -1,72 +1,73 @@
-name: Build and Deploy Spring Boot App Java
+name: Java CI/CD with Maven
 
 on:
   push:
-    branches:
-      - master
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: |
+           mvn clean install
+           mkdir artifacts && cp target/*.jar artifacts
+           cd artifacts && ls
+    - name: Save artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: github-action-artifact
+        path: artifacts
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          
-      - name: Build JAR file
-        run: mvn clean package  # o el comando que uses para construir el archivo JAR
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker image
-        run: |
-          docker build -t myapp:latest .
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy to VPS
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           VPS_USER: root
           VPS_HOST: 77.237.234.122
         run: |
-          # Crear archivo temporal para la clave SSH
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /tmp/id_rsa
-          chmod 600 /tmp/id_rsa
-          
-          # Configurar el archivo known_hosts para evitar advertencias de seguridad
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
-
-          # Verificar la conexión SSH
-          echo "Attempting SSH connection..."
-          if ssh -i /tmp/id_rsa -o ConnectTimeout=10 -o LogLevel=DEBUG $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'; then
-            echo "SSH connection successful"
-          else
-            echo "Failed to connect via SSH" >&2
-            exit 1
-          fi
+          # Verificar conexión SSH
+          ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
 
           # Subir la imagen Docker al VPS
           echo "Uploading Docker image..."
-          docker save myapp:latest | bzip2 | ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
-          
-          # Subir el archivo docker-compose.yml al VPS
-          echo "Uploading docker-compose.yml..."
-          scp -i /tmp/id_rsa docker-compose.yml $VPS_USER@$VPS_HOST:/home/files-docker-compose/
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
 
-          # Listar archivos en el directorio /home/files-docker-compose en el VPS
-          echo "Listing files in /home/files-docker-compose on the VPS..."
-          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'ls -la /home/files-docker-compose'
-
-          # Desplegar la aplicación usando Docker Compose
-          echo "Deploying Docker Compose..."
-          ssh -i /tmp/id_rsa $VPS_USER@$VPS_HOST 'cd /home/files-docker-compose && docker-compose up -d --build'
-
-          # Limpiar el archivo temporal de la clave SSH
-          rm /tmp/id_rsa
+          # Conectarse al VPS y manejar el contenedor
+          ssh $VPS_USER@$VPS_HOST << 'EOF'
+            # Eliminar contenedor antiguo
+            sudo docker rm -f spring-boot-app-container || true
+            # Ejecutar nueva imagen Docker
+            sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
+          EOF
