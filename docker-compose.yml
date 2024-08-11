@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build:
-      context: .  # Esto indica que el Dockerfile está en el mismo directorio
+      context: Dockerfile
     image: myapp:latest
     ports:
       - "8080:8080"
