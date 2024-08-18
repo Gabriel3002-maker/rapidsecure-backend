@@ -1,5 +1,6 @@
 package com.rapidsecure.rapidsecure.service;
 
+import com.rapidsecure.rapidsecure.dto.LoginResponseDTO;
 import com.rapidsecure.rapidsecure.dto.PersonaDTO;
 import com.rapidsecure.rapidsecure.entity.Persona;
 import com.rapidsecure.rapidsecure.entity.Rol;
@@ -42,14 +43,29 @@ public class PersonaService {
         personaRepository.deleteById(id);
     }
 
-    public boolean verificarLogin(String correo, String password) {
+    public LoginResponseDTO verificarLogin(String correo, String password) {
         Optional<Persona> personaOptional = personaRepository.findByCorreo(correo);
+
         if (personaOptional.isPresent()) {
             Persona persona = personaOptional.get();
-            return PasswordUtil.hashPassword(password).equals(persona.getPassword()); // Verificar la contraseña hasheada
+
+            // Verificar la contraseña hasheada
+            if (PasswordUtil.hashPassword(password).equals(persona.getPassword())) {
+                // Devuelve un LoginResponseDTO con los detalles del usuario
+                return new LoginResponseDTO(
+                        persona.getId(),
+                        persona.getNombre(),
+                        persona.getCedula(),
+                        persona.getCorreo(),
+                        persona.getTelefono()
+                );
+            }
         }
-        return false;
+
+        // Devuelve null si las credenciales son incorrectas
+        return null;
     }
+
 
     public boolean resetPassword(String correo, String nuevaPassword) {
         Optional<Persona> personaOptional = personaRepository.findByCorreo(correo);

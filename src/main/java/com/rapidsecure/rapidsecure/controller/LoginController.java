@@ -2,6 +2,7 @@ package com.rapidsecure.rapidsecure.controller;
 
 import com.rapidsecure.rapidsecure.dto.ApiResponse;
 import com.rapidsecure.rapidsecure.dto.LoginRequestDTO;
+import com.rapidsecure.rapidsecure.dto.LoginResponseDTO;
 import com.rapidsecure.rapidsecure.dto.ResetPasswordRequestDTO;
 import com.rapidsecure.rapidsecure.service.PersonaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,19 +20,21 @@ public class LoginController {
     private PersonaService personaService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
-            boolean isValidUser = personaService.verificarLogin(loginRequestDTO.getCorreo(), loginRequestDTO.getPassword());
-            if (isValidUser) {
-                ApiResponse<String> response = new ApiResponse<>(
+            // Verifica si el usuario es válido y obtén los detalles del usuario
+            LoginResponseDTO loginResponse = personaService.verificarLogin(loginRequestDTO.getCorreo(), loginRequestDTO.getPassword());
+
+            if (loginResponse != null) {
+                ApiResponse<LoginResponseDTO> response = new ApiResponse<>(
                         HttpStatus.OK.value(),
                         "Login exitoso",
                         true,
-                        "Login exitoso"
+                        loginResponse // Devuelve los detalles del usuario
                 );
                 return ResponseEntity.ok(response);
             } else {
-                ApiResponse<String> response = new ApiResponse<>(
+                ApiResponse<LoginResponseDTO> response = new ApiResponse<>(
                         HttpStatus.UNAUTHORIZED.value(),
                         "Credenciales incorrectas",
                         false,
@@ -40,7 +43,7 @@ public class LoginController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } catch (Exception e) {
-            ApiResponse<String> response = new ApiResponse<>(
+            ApiResponse<LoginResponseDTO> response = new ApiResponse<>(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Error en el proceso de login: " + e.getMessage(),
                     false,
