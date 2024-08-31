@@ -1,6 +1,8 @@
 package com.rapidsecure.rapidsecure.controller;
 
 import com.rapidsecure.rapidsecure.dto.ApiResponse;
+import com.rapidsecure.rapidsecure.dto.EmergencyCountResponse;
+import com.rapidsecure.rapidsecure.dto.EmergencySummaryResponse;
 import com.rapidsecure.rapidsecure.dto.ReporteEmergenciaDTO;
 import com.rapidsecure.rapidsecure.entity.ReporteEmergencia;
 import com.rapidsecure.rapidsecure.mapper.ReporteEmergenciaMapper;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -195,4 +199,25 @@ public class ReporteEmergenciaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
+
+    @GetMapping("/api/reporteEmergencia/emergencias/conteo")
+    public EmergencyCountResponse getEmergencyAttendanceCount(
+            @RequestParam Integer estadoId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
+
+        // Convert LocalDate to LocalDateTime, start of the day and end of the day
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay().minusSeconds(1);
+
+        Long count = reporteEmergenciaService.obtenerConteoEmergencias(estadoId, start, end);
+
+        return new EmergencyCountResponse(count);
+    }
+
+
+
+
 }
