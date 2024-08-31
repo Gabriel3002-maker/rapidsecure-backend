@@ -17,4 +17,7 @@ public class EmergencyCountService {
         String sql = "SELECT * FROM get_emergency_counts(CAST(? AS DATE), CAST(? AS DATE))";
         return jdbcTemplate.queryForList(sql, startDate, endDate);
     }
+
+
+
 }

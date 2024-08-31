@@ -1,9 +1,6 @@
 package com.rapidsecure.rapidsecure.controller;
 
-import com.rapidsecure.rapidsecure.dto.ApiResponse;
-import com.rapidsecure.rapidsecure.dto.EmergencyCountResponse;
-import com.rapidsecure.rapidsecure.dto.EmergencySummaryResponse;
-import com.rapidsecure.rapidsecure.dto.ReporteEmergenciaDTO;
+import com.rapidsecure.rapidsecure.dto.*;
 import com.rapidsecure.rapidsecure.entity.ReporteEmergencia;
 import com.rapidsecure.rapidsecure.mapper.ReporteEmergenciaMapper;
 import com.rapidsecure.rapidsecure.service.ReporteEmergenciaService;
@@ -218,6 +215,13 @@ public class ReporteEmergenciaController {
     }
 
 
-
+    @GetMapping("api/reporteEmergencia/reportes")
+    public List<ReporteEmergenciaResponseDTO> buscarReportes(
+            @RequestParam(required = false) String searchName,
+            @RequestParam(required = false) String searchEstado,
+            @RequestParam(required = false) String searchTipoEmergencia,
+            @RequestParam(required = false) Integer searchPersonaId) {
+        return reporteEmergenciaService.buscarReportes(searchName, searchEstado, searchTipoEmergencia, searchPersonaId);
+    }
 
 }
