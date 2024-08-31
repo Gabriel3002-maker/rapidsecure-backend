@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones WebSocket</title>
+
+</head>
+<body>
+<h1>Notificaciones en Tiempo Real</h1>
+<script>
+    // Crea una conexión WebSocket con el servidor
+    const socket = new WebSocket('ws://localhost:8080/notifications');
+
+    // Define qué hacer cuando se recibe un mensaje
+    socket.onmessage = function(event) {
+        const message = event.data;
+        console.log('Notificación:', message);
+        alert('Notificación: ' + message); // Muestra una alerta con el mensaje recibido
+    };
+
+    // Define qué hacer cuando se abre la conexión
+    socket.onopen = function() {
+        console.log('Conexión WebSocket establecida');
+    };
+
+    // Define qué hacer cuando se cierra la conexión
+    socket.onclose = function() {
+        console.log('Conexión WebSocket cerrada');
+    };
+
+    // Define qué hacer en caso de error
+    socket.onerror = function(error) {
+        console.error('Error en WebSocket:', error);
+    };
+</script>
+</body>
+</html>
