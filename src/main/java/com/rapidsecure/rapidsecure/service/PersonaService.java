@@ -57,7 +57,8 @@ public class PersonaService {
                         persona.getNombre(),
                         persona.getCedula(),
                         persona.getCorreo(),
-                        persona.getTelefono()
+                        persona.getTelefono(),
+                        persona.getRol().getId()
                 );
             }
         }

@@ -6,14 +6,16 @@ public class LoginResponseDTO {
     private String cedula;
     private String correo;
     private String telefono;
+    private Long rolId;
 
     // Constructor
-    public LoginResponseDTO(Long id, String nombre, String cedula, String correo, String telefono) {
+    public LoginResponseDTO(Long id, String nombre, String cedula, String correo, String telefono , Long rolId) {
         this.id = id;
         this.nombre = nombre;
         this.cedula = cedula;
         this.correo = correo;
         this.telefono = telefono;
+        this.rolId = rolId;
     }
 
     // Getters y setters
@@ -55,5 +57,13 @@ public class LoginResponseDTO {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public Long getRolId() {
+        return rolId;
+    }
+
+    public void setRolId(Long rolId) {
+        this.rolId = rolId;
     }
 }
