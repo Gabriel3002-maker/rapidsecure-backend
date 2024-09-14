@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reporteEmergencia")
-@Tag(name = "Reporte Emergencia", description = "Reporte Emergencia")
+@Tag(name = "Reporte Emergencia", description = "Gestión de Reportes de Emergencia")
 public class ReporteEmergenciaController {
 
     @Autowired
@@ -29,10 +29,10 @@ public class ReporteEmergenciaController {
     private ReporteEmergenciaMapper reporteEmergenciaMapper;
 
     @GetMapping
-    @Operation(summary = "Obtener", description = "Obtener Reporte Emergencia Disponibles")
+    @Operation(summary = "Obtener todos los reportes", description = "Obtiene todos los reportes de emergencia con estado_id igual a 1")
     public ResponseEntity<ApiResponse<List<ReporteEmergenciaDTO>>> obtenerTodosLosReporteEmergencia() {
         try {
-            List<ReporteEmergenciaDTO> reportes = reporteEmergenciaService.obtenerReporteEmergencia()
+            List<ReporteEmergenciaDTO> reportes = reporteEmergenciaService.obtenerReporteEmergenciaNuevo()
                     .stream()
                     .map(reporteEmergenciaMapper::toDto)
                     .collect(Collectors.toList());
@@ -56,7 +56,7 @@ public class ReporteEmergenciaController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener", description = "Obtener Reporte Emergencia por Id")
+    @Operation(summary = "Obtener reporte por ID", description = "Obtiene un reporte de emergencia por su ID")
     public ResponseEntity<ApiResponse<ReporteEmergenciaDTO>> obtenerReporteEmergenciaPorId(@PathVariable Long id) {
         try {
             Optional<ReporteEmergencia> reporteEmergencia = reporteEmergenciaService.obtenerReporteEmergenciaPorId(id);
@@ -90,7 +90,7 @@ public class ReporteEmergenciaController {
     }
 
     @PostMapping
-    @Operation(summary = "Crear", description = "Crear Reporte Emergencia")
+    @Operation(summary = "Crear nuevo reporte", description = "Crea un nuevo reporte de emergencia")
     public ResponseEntity<ApiResponse<ReporteEmergenciaDTO>> crearReporteEmergencia(@RequestBody ReporteEmergenciaDTO reporteEmergenciaDTO) {
         try {
             ReporteEmergencia reporteEmergencia = reporteEmergenciaMapper.toEntity(reporteEmergenciaDTO);
@@ -122,7 +122,7 @@ public class ReporteEmergenciaController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar", description = "Actualizar Reporte Emergencia")
+    @Operation(summary = "Actualizar reporte", description = "Actualiza un reporte de emergencia existente")
     public ResponseEntity<ApiResponse<ReporteEmergenciaDTO>> actualizarReporteEmergencia(@PathVariable Long id, @RequestBody ReporteEmergenciaDTO reporteEmergenciaDTO) {
         try {
             if (!reporteEmergenciaService.obtenerReporteEmergenciaPorId(id).isPresent()) {
@@ -165,7 +165,7 @@ public class ReporteEmergenciaController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar", description = "Eliminar Reporte Emergencia")
+    @Operation(summary = "Eliminar reporte", description = "Elimina un reporte de emergencia por su ID")
     public ResponseEntity<ApiResponse<Void>> eliminarReporteEmergencia(@PathVariable Long id) {
         try {
             if (!reporteEmergenciaService.obtenerReporteEmergenciaPorId(id).isPresent()) {
@@ -197,9 +197,8 @@ public class ReporteEmergenciaController {
         }
     }
 
-
-
-    @GetMapping("/api/reporteEmergencia/emergencias/conteo")
+    @GetMapping("/emergencias/conteo")
+    @Operation(summary = "Contar emergencias", description = "Obtiene el conteo de emergencias según estado y fechas")
     public EmergencyCountResponse getEmergencyAttendanceCount(
             @RequestParam Integer estadoId,
             @RequestParam LocalDate startDate,
@@ -214,14 +213,104 @@ public class ReporteEmergenciaController {
         return new EmergencyCountResponse(count);
     }
 
-
-    @GetMapping("api/reporteEmergencia/reportes")
-    public List<ReporteEmergenciaResponseDTO> buscarReportes(
+    @GetMapping("/reportes")
+    @Operation(summary = "Buscar reportes", description = "Busca reportes de emergencia según criterios")
+    public ResponseEntity<ApiResponse<List<ReporteEmergenciaResponseDTO>>> buscarReportes(
             @RequestParam(required = false) String searchName,
             @RequestParam(required = false) String searchEstado,
             @RequestParam(required = false) String searchTipoEmergencia,
             @RequestParam(required = false) Integer searchPersonaId) {
-        return reporteEmergenciaService.buscarReportes(searchName, searchEstado, searchTipoEmergencia, searchPersonaId);
+
+        List<ReporteEmergenciaResponseDTO> reportes = reporteEmergenciaService.buscarReportes(searchName, searchEstado, searchTipoEmergencia, searchPersonaId);
+
+        ApiResponse<List<ReporteEmergenciaResponseDTO>> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Reportes de emergencia encontrados",
+                true,
+                reportes
+        );
+
+        return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/estado/nuevo")
+    @Operation(summary = "Obtener reportes nuevos", description = "Obtiene los reportes de emergencia con estado 'Nuevo'")
+    public ResponseEntity<ApiResponse<List<ReporteEmergenciaDTO>>> obtenerReportesNuevos() {
+        try {
+            List<ReporteEmergenciaDTO> reportes = reporteEmergenciaService.obtenerReporteEmergenciaNuevo()
+                    .stream()
+                    .map(reporteEmergenciaMapper::toDto)
+                    .collect(Collectors.toList());
+
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Reportes nuevos obtenidos correctamente",
+                    true,
+                    reportes
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al obtener reportes nuevos: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/estado/pendiente")
+    @Operation(summary = "Obtener reportes pendientes", description = "Obtiene los reportes de emergencia con estado 'Pendiente'")
+    public ResponseEntity<ApiResponse<List<ReporteEmergenciaDTO>>> obtenerReportesPendientes() {
+        try {
+            List<ReporteEmergenciaDTO> reportes = reporteEmergenciaService.obtenerReporteEmergenciaPendientes()
+                    .stream()
+                    .map(reporteEmergenciaMapper::toDto)
+                    .collect(Collectors.toList());
+
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Reportes pendientes obtenidos correctamente",
+                    true,
+                    reportes
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al obtener reportes pendientes: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/estado/finalizado")
+    @Operation(summary = "Obtener reportes finalizados", description = "Obtiene los reportes de emergencia con estado 'Finalizado'")
+    public ResponseEntity<ApiResponse<List<ReporteEmergenciaDTO>>> obtenerReportesFinalizados() {
+        try {
+            List<ReporteEmergenciaDTO> reportes = reporteEmergenciaService.obtenerReporteEmergenciaFinalizado()
+                    .stream()
+                    .map(reporteEmergenciaMapper::toDto)
+                    .collect(Collectors.toList());
+
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Reportes finalizados obtenidos correctamente",
+                    true,
+                    reportes
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<ReporteEmergenciaDTO>> response = new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error al obtener reportes finalizados: " + e.getMessage(),
+                    false,
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

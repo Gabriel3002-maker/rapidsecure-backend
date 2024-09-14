@@ -34,5 +34,8 @@ public interface ReporteEmergenciaRepository extends JpaRepository<ReporteEmerge
                                   @Param("searchPersonaId") Integer searchPersonaId);
 
 
+    //Filtrar por Estado
+    List<ReporteEmergencia> findByEstadoId(Integer estadoId);
+
 
 }

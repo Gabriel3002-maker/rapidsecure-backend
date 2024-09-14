@@ -23,7 +23,7 @@ public class ReporteEmergenciaService {
     private NotificationWebSocketHandler notificationWebSocketHandler; // Inyección de dependencia
 
     public List<ReporteEmergencia> obtenerReporteEmergencia() {
-        return reporteEmergenciaRepository.findAll();
+        return reporteEmergenciaRepository.findAll(); //mostrar solo nuevos = 1
     }
 
     public Optional<ReporteEmergencia> obtenerReporteEmergenciaPorId(Long id) {
@@ -77,5 +77,17 @@ public class ReporteEmergenciaService {
                         (String) result[6]                 // tipo_emergencia_descripcion
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public List<ReporteEmergencia> obtenerReporteEmergenciaNuevo() {
+        return reporteEmergenciaRepository.findByEstadoId(1);
+    }
+
+    public List<ReporteEmergencia> obtenerReporteEmergenciaPendientes() {
+        return reporteEmergenciaRepository.findByEstadoId(2);
+    }
+
+    public List<ReporteEmergencia> obtenerReporteEmergenciaFinalizado() {
+        return reporteEmergenciaRepository.findByEstadoId(3);
     }
 }
