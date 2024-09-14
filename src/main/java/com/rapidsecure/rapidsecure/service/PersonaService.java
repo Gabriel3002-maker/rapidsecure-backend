@@ -5,6 +5,7 @@ import com.rapidsecure.rapidsecure.dto.PersonaDTO;
 import com.rapidsecure.rapidsecure.entity.Persona;
 import com.rapidsecure.rapidsecure.entity.Rol;
 import com.rapidsecure.rapidsecure.repository.PersonaRepository;
+import com.rapidsecure.rapidsecure.config.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +14,12 @@ import java.util.Optional;
 
 @Service
 public class PersonaService {
+
     @Autowired
     private PersonaRepository personaRepository;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider; // Inyectar JwtTokenProvider
 
     public List<Persona> obtenerTodaslasPersonas() {
         return personaRepository.findAll();
@@ -51,14 +56,18 @@ public class PersonaService {
 
             // Verificar la contraseña hasheada
             if (PasswordUtil.hashPassword(password).equals(persona.getPassword())) {
-                // Devuelve un LoginResponseDTO con los detalles del usuario
+                // Generar el token JWT
+                String token = jwtTokenProvider.generateToken(correo);
+
+                // Devuelve un LoginResponseDTO con los detalles del usuario y el token
                 return new LoginResponseDTO(
                         persona.getId(),
                         persona.getNombre(),
                         persona.getCedula(),
                         persona.getCorreo(),
                         persona.getTelefono(),
-                        persona.getRol().getId()
+                        persona.getRol().getId(),
+                        token
                 );
             }
         }
@@ -66,7 +75,6 @@ public class PersonaService {
         // Devuelve null si las credenciales son incorrectas
         return null;
     }
-
 
     public boolean resetPassword(String correo, String nuevaPassword) {
         Optional<Persona> personaOptional = personaRepository.findByCorreo(correo);

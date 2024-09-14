@@ -7,15 +7,17 @@ public class LoginResponseDTO {
     private String correo;
     private String telefono;
     private Long rolId;
+    private String token; // Nuevo campo para el token JWT
 
     // Constructor
-    public LoginResponseDTO(Long id, String nombre, String cedula, String correo, String telefono , Long rolId) {
+    public LoginResponseDTO(Long id, String nombre, String cedula, String correo, String telefono, Long rolId, String token) {
         this.id = id;
         this.nombre = nombre;
         this.cedula = cedula;
         this.correo = correo;
         this.telefono = telefono;
         this.rolId = rolId;
+        this.token = token; // Inicializar el token
     }
 
     // Getters y setters
@@ -65,5 +67,13 @@ public class LoginResponseDTO {
 
     public void setRolId(Long rolId) {
         this.rolId = rolId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

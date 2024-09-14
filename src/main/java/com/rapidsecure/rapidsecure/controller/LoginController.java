@@ -4,6 +4,7 @@ import com.rapidsecure.rapidsecure.dto.ApiResponse;
 import com.rapidsecure.rapidsecure.dto.LoginRequestDTO;
 import com.rapidsecure.rapidsecure.dto.LoginResponseDTO;
 import com.rapidsecure.rapidsecure.dto.ResetPasswordRequestDTO;
+import com.rapidsecure.rapidsecure.config.JwtTokenProvider;
 import com.rapidsecure.rapidsecure.service.PersonaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class LoginController {
     @Autowired
     private PersonaService personaService;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
@@ -26,11 +30,25 @@ public class LoginController {
             LoginResponseDTO loginResponse = personaService.verificarLogin(loginRequestDTO.getCorreo(), loginRequestDTO.getPassword());
 
             if (loginResponse != null) {
+                // Generar un token JWT
+                String token = jwtTokenProvider.generateToken(loginRequestDTO.getCorreo());
+
+                // Incluir el token en la respuesta
+                LoginResponseDTO responseDto = new LoginResponseDTO(
+                        loginResponse.getId(),
+                        loginResponse.getNombre(),
+                        loginResponse.getCedula(),
+                        loginResponse.getCorreo(),
+                        loginResponse.getTelefono(),
+                        loginResponse.getRolId(),
+                        token // Añadir el token JWT aquí
+                );
+
                 ApiResponse<LoginResponseDTO> response = new ApiResponse<>(
                         HttpStatus.OK.value(),
                         "Login exitoso",
                         true,
-                        loginResponse // Devuelve los detalles del usuario
+                        responseDto
                 );
                 return ResponseEntity.ok(response);
             } else {
