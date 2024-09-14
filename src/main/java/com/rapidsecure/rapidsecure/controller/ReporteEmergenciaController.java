@@ -93,6 +93,7 @@ public class ReporteEmergenciaController {
     @Operation(summary = "Crear nuevo reporte", description = "Crea un nuevo reporte de emergencia")
     public ResponseEntity<ApiResponse<ReporteEmergenciaDTO>> crearReporteEmergencia(@RequestBody ReporteEmergenciaDTO reporteEmergenciaDTO) {
         try {
+            // Verificar si los campos opcionales están presentes
             ReporteEmergencia reporteEmergencia = reporteEmergenciaMapper.toEntity(reporteEmergenciaDTO);
             ReporteEmergencia nuevoReporteEmergencia = reporteEmergenciaService.guardarEmergencia(reporteEmergencia);
             ApiResponse<ReporteEmergenciaDTO> response = new ApiResponse<>(
@@ -125,7 +126,8 @@ public class ReporteEmergenciaController {
     @Operation(summary = "Actualizar reporte", description = "Actualiza un reporte de emergencia existente")
     public ResponseEntity<ApiResponse<ReporteEmergenciaDTO>> actualizarReporteEmergencia(@PathVariable Long id, @RequestBody ReporteEmergenciaDTO reporteEmergenciaDTO) {
         try {
-            if (!reporteEmergenciaService.obtenerReporteEmergenciaPorId(id).isPresent()) {
+            Optional<ReporteEmergencia> existingReport = reporteEmergenciaService.obtenerReporteEmergenciaPorId(id);
+            if (!existingReport.isPresent()) {
                 ApiResponse<ReporteEmergenciaDTO> response = new ApiResponse<>(
                         HttpStatus.NOT_FOUND.value(),
                         "Reporte de emergencia no encontrado",
@@ -135,6 +137,7 @@ public class ReporteEmergenciaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
+            // Verificar si los campos opcionales están presentes
             ReporteEmergencia reporteEmergencia = reporteEmergenciaMapper.toEntity(reporteEmergenciaDTO);
             reporteEmergencia.setId(id);  // asegura que se actualiza el reporte correcto
             ReporteEmergencia reporteEmergenciaActualizado = reporteEmergenciaService.guardarEmergencia(reporteEmergencia);
@@ -168,7 +171,8 @@ public class ReporteEmergenciaController {
     @Operation(summary = "Eliminar reporte", description = "Elimina un reporte de emergencia por su ID")
     public ResponseEntity<ApiResponse<Void>> eliminarReporteEmergencia(@PathVariable Long id) {
         try {
-            if (!reporteEmergenciaService.obtenerReporteEmergenciaPorId(id).isPresent()) {
+            Optional<ReporteEmergencia> reporteEmergencia = reporteEmergenciaService.obtenerReporteEmergenciaPorId(id);
+            if (!reporteEmergencia.isPresent()) {
                 ApiResponse<Void> response = new ApiResponse<>(
                         HttpStatus.NOT_FOUND.value(),
                         "Reporte de emergencia no encontrado",

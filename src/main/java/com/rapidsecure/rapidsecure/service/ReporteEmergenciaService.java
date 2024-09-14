@@ -20,10 +20,10 @@ public class ReporteEmergenciaService {
     private ReporteEmergenciaRepository reporteEmergenciaRepository;
 
     @Autowired
-    private NotificationWebSocketHandler notificationWebSocketHandler; // Inyección de dependencia
+    private NotificationWebSocketHandler notificationWebSocketHandler;
 
     public List<ReporteEmergencia> obtenerReporteEmergencia() {
-        return reporteEmergenciaRepository.findAll(); //mostrar solo nuevos = 1
+        return reporteEmergenciaRepository.findAll();
     }
 
     public Optional<ReporteEmergencia> obtenerReporteEmergenciaPorId(Long id) {
@@ -31,25 +31,27 @@ public class ReporteEmergenciaService {
     }
 
     public ReporteEmergencia guardarEmergencia(ReporteEmergencia reporteEmergencia) {
+        // Guardar o actualizar la emergencia
         ReporteEmergencia nuevoReporteEmergencia = reporteEmergenciaRepository.save(reporteEmergencia);
 
         try {
             // Construir mensaje de notificación
             String mensaje = String.format(
-                    "Nueva emergencia registrada: ID %d,  Descripción: %s, Ubicación: %s, Latitud: %.6f, Longitud: %.6f, Fecha y Hora: %s ",
+                    "Nueva emergencia registrada: ID %d, Descripción: %s, Ubicación: %s, Latitud: %.6f, Longitud: %.6f, Fecha y Hora: %s, Usuario que atendió: %s, Hora de Atención: %s",
                     nuevoReporteEmergencia.getId(),
                     nuevoReporteEmergencia.getDescripcion(),
                     nuevoReporteEmergencia.getUbicacion(),
                     nuevoReporteEmergencia.getLatitud(),
                     nuevoReporteEmergencia.getLongitud(),
                     nuevoReporteEmergencia.getFechaHoraReporte(),
-                    nuevoReporteEmergencia.getEstado()
+                    nuevoReporteEmergencia.getUsuarioAtendio() != null ? nuevoReporteEmergencia.getUsuarioAtendio().getId() : "No asignado",
+                    nuevoReporteEmergencia.getHoraAtencion()
             );
 
             // Enviar notificación a los clientes
             notificationWebSocketHandler.sendNotification(mensaje);
         } catch (IOException e) {
-            e.printStackTrace(); // Registra la excepción o maneja el error según sea necesario
+            e.printStackTrace();
         }
 
         return nuevoReporteEmergencia;

@@ -12,8 +12,11 @@ public class ReporteEmergenciaDTO {
     private Double latitud;
     private Double longitud;
     private Long tipoEmergenciaId;
+    private Long usuarioAtendioId;  // ID del usuario que atendió la emergencia
+    private LocalDateTime horaAtencion;  // Hora en que se tomó la emergencia
 
     // Getters y Setters
+
     public Long getId() {
         return id;
     }
@@ -84,5 +87,21 @@ public class ReporteEmergenciaDTO {
 
     public void setTipoEmergenciaId(Long tipoEmergenciaId) {
         this.tipoEmergenciaId = tipoEmergenciaId;
+    }
+
+    public Long getUsuarioAtendioId() {
+        return usuarioAtendioId;
+    }
+
+    public void setUsuarioAtendioId(Long usuarioAtendioId) {
+        this.usuarioAtendioId = usuarioAtendioId;
+    }
+
+    public LocalDateTime getHoraAtencion() {
+        return horaAtencion;
+    }
+
+    public void setHoraAtencion(LocalDateTime horaAtencion) {
+        this.horaAtencion = horaAtencion;
     }
 }

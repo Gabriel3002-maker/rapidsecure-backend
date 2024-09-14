@@ -31,6 +31,13 @@ public class ReporteEmergenciaMapper {
         dto.setLatitud(entity.getLatitud());
         dto.setLongitud(entity.getLongitud());
         dto.setTipoEmergenciaId(entity.getTipoEmergencia().getId());
+
+        // Nuevos campos opcionales
+        if (entity.getUsuarioAtendio() != null) {
+            dto.setUsuarioAtendioId(entity.getUsuarioAtendio().getId());
+        }
+        dto.setHoraAtencion(entity.getHoraAtencion());
+
         return dto;
     }
 
@@ -54,6 +61,14 @@ public class ReporteEmergenciaMapper {
         entity.setTipoEmergencia(tipoEmergencia);
         entity.setLatitud(dto.getLatitud());
         entity.setLongitud(dto.getLongitud());
+
+        // Asignar campos opcionales si están presentes
+        if (dto.getUsuarioAtendioId() != null) {
+            Persona usuarioAtendio = personaService.obtenerPersonaPorCedula(dto.getUsuarioAtendioId())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+            entity.setUsuarioAtendio(usuarioAtendio);
+        }
+        entity.setHoraAtencion(dto.getHoraAtencion());
 
         return entity;
     }

@@ -2,7 +2,6 @@ package com.rapidsecure.rapidsecure.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,7 +38,16 @@ public class ReporteEmergencia {
     @JoinColumn(name = "tipo_emergencia_id", nullable = false)
     private TipoEmergencia tipoEmergencia;
 
+    // Nuevas columnas
+    @ManyToOne
+    @JoinColumn(name = "usuario_atendio_id")
+    private Persona usuarioAtendio;  // Relación con Persona para el usuario que atendió la emergencia
+
+    @Column(name = "hora_atencion")
+    private LocalDateTime horaAtencion;  // Hora en que se tomó la emergencia
+
     // Getters y Setters
+
     public Long getId() {
         return id;
     }
@@ -110,5 +118,21 @@ public class ReporteEmergencia {
 
     public void setTipoEmergencia(TipoEmergencia tipoEmergencia) {
         this.tipoEmergencia = tipoEmergencia;
+    }
+
+    public Persona getUsuarioAtendio() {
+        return usuarioAtendio;
+    }
+
+    public void setUsuarioAtendio(Persona usuarioAtendio) {
+        this.usuarioAtendio = usuarioAtendio;
+    }
+
+    public LocalDateTime getHoraAtencion() {
+        return horaAtencion;
+    }
+
+    public void setHoraAtencion(LocalDateTime horaAtencion) {
+        this.horaAtencion = horaAtencion;
     }
 }
