@@ -1,34 +1,65 @@
-deploy:
-  needs: build
-  runs-on: ubuntu-latest
-  steps:
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+name: Java CI/CD with Maven
 
-    - name: Add SSH Host Key
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -H 77.237.234.122 >> ~/.ssh/known_hosts
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
-    - name: Deploy to VPS
-      env:
-        VPS_USER: root
-        VPS_HOST: 77.237.234.122
-      run: |
-        # Verificar conexión SSH
-        ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn clean install
 
-        # Clonar el repositorio y construir el proyecto
-        ssh $VPS_USER@$VPS_HOST << EOF
-          # Clonar el repositorio (asegúrate de que tienes acceso)
-          git clone https://github.com/${{ github.repository }} /path/to/your/project
-          cd /path/to/your/project
-          # Construir el proyecto
-          mvn clean install
-          # Ejecutar la nueva imagen Docker
-          sudo docker rm -f spring-boot-app-container || true
-          sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest .
-          sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
-        EOF
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH Host Key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 77.237.234.122 >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        env:
+          VPS_USER: root
+          VPS_HOST: 77.237.234.122
+        run: |
+          # Verificar conexión SSH
+          ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST 'echo "SSH connection successful"'
+
+          # Clonar o actualizar el repositorio y construir el proyecto
+          ssh $VPS_USER@$VPS_HOST << EOF
+            # Clonar el repositorio si no existe, o actualizarlo si ya está
+            if [ ! -d "/path/to/your/project" ]; then
+              git clone https://github.com/${{ github.repository }} /path/to/your/project
+            else
+              cd /path/to/your/project
+              git pull
+            fi
+            
+            cd /path/to/your/project
+            # Construir el proyecto
+            mvn clean install
+            
+            # Ejecutar el contenedor Docker
+            sudo docker rm -f spring-boot-app-container || true
+            sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest .
+            sudo docker run -d -p 8080:8080 --name spring-boot-app-container ${{ secrets.DOCKER_USERNAME }}/spring-boot-github-action-demo:latest
+          EOF
