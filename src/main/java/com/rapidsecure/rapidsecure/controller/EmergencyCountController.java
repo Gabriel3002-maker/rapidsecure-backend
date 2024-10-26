@@ -26,4 +26,14 @@ public class EmergencyCountController {
             @RequestParam String endDate) {
         return emergencyCountService.getEmergencyCounts(startDate, endDate);
     }
+
+    @GetMapping("/emergency-zones")
+    public List<Map<String, Object>> getEmergencyZone(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam Integer tipoemergenciaId
+
+            ) {
+        return emergencyCountService.getEmergencyZone(startDate, endDate, tipoemergenciaId);
+    }
 }

@@ -18,6 +18,18 @@ public class EmergencyCountService {
         return jdbcTemplate.queryForList(sql, startDate, endDate);
     }
 
+    
+    public List<Map<String, Object>> getEmergencyZone(String startDate, String endDate , Integer tipoemergenciaId) {
+    String sql = "SELECT latitud, longitud " +
+                 "FROM reporte_emergencia re " +
+                 "WHERE fecha_hora_reporte >= ? " +
+                 "AND fecha_hora_reporte <= ? " +
+                 "AND tipo_emergencia_id = ?";
+
+    return jdbcTemplate.queryForList(sql, startDate, endDate, tipoemergenciaId );
+}
+
+
 
 
 }
